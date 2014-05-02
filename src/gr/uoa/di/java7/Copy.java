@@ -1,4 +1,4 @@
-package gr.di.uoa.java7;
+package gr.uoa.di.java7;
 
 import java.io.IOException;
 import java.nio.file.CopyOption;

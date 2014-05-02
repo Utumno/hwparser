@@ -1,8 +1,11 @@
 package gr.uoa.di.hw.helpers;
 
 import gr.uoa.di.helpers.eclipse.ProjectFiles;
+import gr.uoa.di.java.helpers.Zip;
+import gr.uoa.di.java.helpers.Zip.CompressException;
 import gr.uoa.di.java7.helpers.io.FileVisitors;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -13,22 +16,23 @@ import java.util.List;
 
 public final class Setup {
 
-	List<Sdi> sdis;
 	private static final Path GIT_DEFAULT = FileSystems.getDefault().getPath(
 		"C:\\dropbox\\eclipse_workspaces\\_\\_templates\\_git");
 
 	// List
 	static class Sdi {
 
-		private long _sdi;
-
 		public static Sdi from(String s) throws Sdi.ParserException {
 			final Sdi sdi = new Sdi();
-			if (s.split("sdi").length == 2) sdi._sdi = Long.valueOf(s
-				.split("sdi")[1]);
-			else if (s.split("1115").length == 2) sdi._sdi = Long.valueOf(s
-				.split("sdi")[1]);
-			else throw new Sdi.ParserException(s);
+			try {
+				if (s.split("sdi").length == 2) Long.valueOf(s.split("sdi")[1]);
+				else if (s.split("1115").length == 2) Long.valueOf(s
+					.split("sdi")[1]);
+				else throw new Sdi.ParserException(s);
+			} catch (NumberFormatException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			return sdi;
 		}
 
@@ -42,12 +46,13 @@ public final class Setup {
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void _Setup(String[] args) throws IOException {
 		int i = -1;
 		String hwDirName = args[++i];
 		String destDirName = args[++i];
 		String hwFileName = args[++i];
 		String lastDigit = args[++i];
+		String hwNum = args[++i];
 		Path hwDirPath = FileSystems.getDefault().getPath(hwDirName);
 		final List<Path> filteredDirs = new ArrayList<>();
 		for (Path entry : Files.newDirectoryStream(hwDirPath)) {
@@ -68,11 +73,25 @@ public final class Setup {
 			FileVisitors.copyRecursiveContents(GIT_DEFAULT, copied,
 				StandardCopyOption.COPY_ATTRIBUTES);
 			ProjectFiles.createCProjectFile(copied.toString(), projectName
-				+ "_hw1");
+				+ "_hw" + hwNum);
 			ProjectFiles.createProjectFile(copied.toString(), projectName
-				+ "_hw1");
+				+ "_hw" + hwNum);
+			// hwFileName is zip
+			try {
+				final File zipFile = new File(copied.toFile(), hwFileName);
+				Zip.unZipFolder(zipFile, copied.toString());
+				if (!zipFile.delete()) {
+					log("Failed to delete " + zipFile);
+				}
+			} catch (CompressException e) {
+				e.printStackTrace();
+			}
 			FileVisitors.gitInit(copied);
 		}
+	}
+
+	public static void main(String[] args) throws IOException {
+		// _Setup(args);
 	}
 
 	private static boolean checkAndLog(Path entry, String hwFileName,

@@ -20,15 +20,8 @@ public class ProjectFiles {
 	private static final String TEMPLATES_DIR = "C:\\dropbox\\"
 		+ "eclipse_workspaces\\_\\_templates";
 	static {
-		try {
-			Path path = Paths.get(TEMPLATES_DIR, CPROJECT_FILENAME);
-			CPROJECT = Reader.readFile(path, ECLIPSE_FILES_CHARSET);
-			path = Paths.get(TEMPLATES_DIR, PROJECT_FILENAME);
-			PROJECT = Reader.readFile(path, ECLIPSE_FILES_CHARSET);
-		} catch (IOException e) {
-			throw new RuntimeException("Construction of the eclipse template"
-				+ " .cproject file failed", e);
-		}
+		CPROJECT = templateString(CPROJECT_FILENAME);
+		PROJECT = templateString(PROJECT_FILENAME);
 	}
 
 	private ProjectFiles() {}
@@ -47,5 +40,18 @@ public class ProjectFiles {
 		Path filePath = Paths.get(directoryPath, PROJECT_FILENAME);
 		Files.write(filePath, cproj.getBytes(ECLIPSE_FILES_CHARSET),
 			StandardOpenOption.CREATE);
+	}
+
+	// =========================================================================
+	// Helpers
+	// =========================================================================
+	private static String templateString(final String filename) {
+		try {
+			Path path = Paths.get(TEMPLATES_DIR, filename);
+			return Reader.readFile(path, ECLIPSE_FILES_CHARSET);
+		} catch (IOException e) {
+			throw new RuntimeException("Construction of the eclipse template "
+				+ filename + " file failed", e);
+		}
 	}
 }
